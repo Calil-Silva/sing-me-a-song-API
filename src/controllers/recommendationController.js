@@ -21,9 +21,10 @@ async function addNewRecommendation(req, res) {
           'Ocorreu um erro, verifique se os campos nome e link estão preenchidos corretamente.',
       });
     }
-    return res
-      .status(201)
-      .send({ message: 'Recomendação criada com sucesso!' });
+    return res.status(201).send({
+      message: 'Recomendação criada com sucesso!',
+      recommendation: addedRecommendation,
+    });
   } catch (error) {
     return res
       .status(500)

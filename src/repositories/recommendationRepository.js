@@ -15,7 +15,14 @@ async function createRecommendation({ name, youtubeLink }) {
     [name, youtubeLink],
   );
 
-  return newRecommendation.rows[0];
+  return newRecommendation.rows;
 }
 
-export { createRecommendation, findRecommendationByLink };
+async function removeRecommendation({ recommendationId }) {
+  return connection.query(
+    'UPDATE recommendations SET removed_date = NOW() WHERE id = $1;',
+    [recommendationId],
+  );
+}
+
+export { createRecommendation, findRecommendationByLink, removeRecommendation };

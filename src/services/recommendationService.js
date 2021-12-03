@@ -16,4 +16,8 @@ async function newRecommendation({ name, youtubeLink }) {
   return recommendation;
 }
 
-export { newRecommendation };
+async function removeRecommendation({ recommendationId }) {
+  return recommendationRepository.removeRecommendation({ recommendationId });
+}
+
+export { newRecommendation, removeRecommendation };
