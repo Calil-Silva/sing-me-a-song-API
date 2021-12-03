@@ -1,4 +1,4 @@
-import connection from '../database/database';
+import connection from '../database/database.js';
 
 async function createVote({ recommendationId, type }) {
   const upvote = await connection.query(
@@ -11,8 +11,8 @@ async function createVote({ recommendationId, type }) {
 
 async function findDownVotes({ recommendationId }) {
   const downVotesList = await connection.query(
-    'SELECT * FROM score_board WHERE type = downvote AND rec_id = $1;',
-    [recommendationId],
+    'SELECT * FROM score_board WHERE type = $1 AND rec_id = $2;',
+    ['downvote', recommendationId],
   );
 
   return downVotesList.rowCount;

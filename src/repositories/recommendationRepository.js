@@ -20,9 +20,9 @@ async function createRecommendation({ name, youtubeLink }) {
 
 async function removeRecommendation({ recommendationId }) {
   return connection.query(
-    'UPDATE score_board SET removed_date = NOW() WHERE rec_id = $1;',
+    'UPDATE recommendations SET removed_date = NOW() WHERE id = $1;',
     [recommendationId],
   );
 }
 
-export { createRecommendation, findRecommendationByLink };
+export { createRecommendation, findRecommendationByLink, removeRecommendation };

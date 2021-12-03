@@ -1,18 +1,31 @@
 import * as voteRepository from '../repositories/voteRepository.js';
-import * as recommendationService from '../services/recommendationService.js';
+import * as recommendationService from './recommendationService.js';
 
-async function addNewVote({ recommendationId, type }) {
-  if (type === 'downvote') {
-    const downVotesAmount = await voteRepository.findDownVotes(
+async function addUpVote({ recommendationId }) {
+  const vote = await voteRepository.createVote({
+    recommendationId,
+    type: 'upvote',
+  });
+}
+
+async function addDownVote({ recommendationId }) {
+  const downVotesAmount = await voteRepository.findDownVotes({
+    recommendationId,
+  });
+
+  if (downVotesAmount === 5) {
+    await recommendationService.removeRecommendation({
       recommendationId,
-    );
-
-    if (downVotesAmount === 4) {
-      await recommendationService.removeRecommendation({
-        recommendationId,
-      });
-    }
+    });
+    return [];
   }
 
-  const vote = await voteRepository.createVote({ recommendationId, type });
+  const vote = await voteRepository.createVote({
+    recommendationId,
+    type: 'downvote',
+  });
+
+  return vote;
 }
+
+export { addUpVote, addDownVote };
