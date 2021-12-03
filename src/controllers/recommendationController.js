@@ -1,4 +1,4 @@
-import * as recommendationService from '../services/recommendation.js';
+import * as recommendationService from '../services/recommendationService.js';
 
 async function addNewRecommendation(req, res) {
   const { name, youtubeLink } = req.body;
@@ -8,6 +8,12 @@ async function addNewRecommendation(req, res) {
       name,
       youtubeLink,
     });
+
+    if (!addedRecommendation) {
+      return res
+        .status(409)
+        .send({ message: 'Esta recomendação já foi feita.' });
+    }
 
     if (addedRecommendation.length === 0) {
       return res.status(400).send({

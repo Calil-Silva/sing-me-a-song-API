@@ -1,5 +1,5 @@
 import express from 'express';
-import * as recommendationController from './controllers/recommendation.js';
+import * as recommendationController from './controllers/recommendationController.js';
 
 const app = express();
 
