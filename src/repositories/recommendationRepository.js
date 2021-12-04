@@ -25,4 +25,18 @@ async function removeRecommendation({ recommendationId }) {
   );
 }
 
-export { createRecommendation, findRecommendationByLink, removeRecommendation };
+async function findDeletedRecommendation({ recommendationId }) {
+  const deletedRecommendation = await connection.query(
+    'SELECT * FROM recommendations WHERE id = $1 AND removed_date is NOT NULL;',
+    [recommendationId],
+  );
+
+  return deletedRecommendation.rows[0];
+}
+
+export {
+  createRecommendation,
+  findRecommendationByLink,
+  removeRecommendation,
+  findDeletedRecommendation,
+};

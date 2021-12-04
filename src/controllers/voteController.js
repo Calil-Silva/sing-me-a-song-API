@@ -12,7 +12,7 @@ async function addDownVote(req, res) {
       return res.status(200).send('Esta recomendação foi removida');
     }
 
-    return res.sendStatus(201);
+    return res.status(201).send(downVote);
   } catch (error) {
     return res
       .status(500)
@@ -20,4 +20,21 @@ async function addDownVote(req, res) {
   }
 }
 
-export { addDownVote };
+async function addUpVote(req, res) {
+  const { id } = req.params;
+
+  try {
+    const upvote = await voteService.addUpVote({ recommendationId: id });
+    if (!upvote) {
+      return res.status(404).send({ message: 'Recomendação não encontrada.' });
+    }
+
+    return res.status(201).send(upvote);
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ message: 'Ocorreu um erro inesperado, tente mais tarde.' });
+  }
+}
+
+export { addDownVote, addUpVote };

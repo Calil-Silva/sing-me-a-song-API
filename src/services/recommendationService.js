@@ -20,4 +20,12 @@ async function removeRecommendation({ recommendationId }) {
   return recommendationRepository.removeRecommendation({ recommendationId });
 }
 
-export { newRecommendation, removeRecommendation };
+async function isDeleted({ recommendationId }) {
+  const checkDeleted = await recommendationRepository.findDeletedRecommendation(
+    { recommendationId },
+  );
+
+  return checkDeleted;
+}
+
+export { newRecommendation, removeRecommendation, isDeleted };
