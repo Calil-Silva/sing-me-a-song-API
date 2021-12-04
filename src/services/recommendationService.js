@@ -28,4 +28,46 @@ async function isDeleted({ recommendationId }) {
   return checkDeleted;
 }
 
-export { newRecommendation, removeRecommendation, isDeleted };
+async function getRecommendation() {
+  const biasedList = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B'];
+
+  const generateRandomNumber = (min, max) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
+  const randomLetter =
+    biasedList[generateRandomNumber(0, biasedList.length - 1)];
+
+  const recommendationHigherThenTenScore =
+    await recommendationRepository.getRecommendationHigherThenTenScore();
+  const recommendationLowerThenOrEqualToTenScore =
+    await recommendationRepository.getRecommendationLowerThenOrEqualToTenScore();
+  const randomRecommendation =
+    await recommendationRepository.getRandomRecommendation();
+  const findAnyRecommendation =
+    await recommendationRepository.findAnyRecommendation();
+
+  if (
+    (recommendationHigherThenTenScore &&
+      !recommendationLowerThenOrEqualToTenScore) ||
+    (!recommendationHigherThenTenScore &&
+      !recommendationLowerThenOrEqualToTenScore)
+  ) {
+    return randomRecommendation;
+  }
+
+  if (!findAnyRecommendation) {
+    return [];
+  }
+
+  if (randomLetter === 'A') {
+    return recommendationHigherThenTenScore;
+  }
+  return recommendationLowerThenOrEqualToTenScore;
+}
+
+export {
+  newRecommendation,
+  removeRecommendation,
+  isDeleted,
+  getRecommendation,
+};
