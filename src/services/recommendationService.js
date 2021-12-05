@@ -28,4 +28,50 @@ async function isDeleted({ recommendationId }) {
   return checkDeleted;
 }
 
-export { newRecommendation, removeRecommendation, isDeleted };
+async function getRecommendation() {
+  const biasedList = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'B', 'B'];
+
+  const generateRandom = (min, max) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+
+  const randomLetter = biasedList[generateRandom(0, biasedList.length - 1)];
+
+  const recommendationHigherThenTenScore =
+    await recommendationRepository.getRecommendationHigherThenTenScore();
+
+  const recommendationLowerThenOrEqualToTenScore =
+    await recommendationRepository.getRecommendationLowerThenOrEqualToTenScore();
+
+  const randomRecommendation =
+    await recommendationRepository.getRandomRecommendation();
+
+  const findAnyRecommendation =
+    await recommendationRepository.findAnyRecommendation();
+
+  if (!findAnyRecommendation) {
+    return [];
+  }
+
+  if (
+    (recommendationHigherThenTenScore &&
+      !recommendationLowerThenOrEqualToTenScore) ||
+    (!recommendationHigherThenTenScore &&
+      recommendationLowerThenOrEqualToTenScore) ||
+    (!recommendationHigherThenTenScore &&
+      !recommendationLowerThenOrEqualToTenScore)
+  ) {
+    return randomRecommendation;
+  }
+
+  if (randomLetter === 'A') {
+    return recommendationHigherThenTenScore;
+  }
+  return recommendationLowerThenOrEqualToTenScore;
+}
+
+export {
+  newRecommendation,
+  removeRecommendation,
+  isDeleted,
+  getRecommendation,
+};

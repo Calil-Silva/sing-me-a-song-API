@@ -19,6 +19,12 @@ async function addUpVote({ recommendationId }) {
 }
 
 async function addDownVote({ recommendationId }) {
+  const isDeleted = await recommendationService.isDeleted({ recommendationId });
+
+  if (isDeleted) {
+    return null;
+  }
+
   const downVotesAmount = await voteRepository.findDownVotes({
     recommendationId,
   });

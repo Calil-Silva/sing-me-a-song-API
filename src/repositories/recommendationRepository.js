@@ -34,9 +34,91 @@ async function findDeletedRecommendation({ recommendationId }) {
   return deletedRecommendation.rows[0];
 }
 
+async function getRecommendationHigherThenTenScore() {
+  const recommendation = await connection.query(
+    `
+    SELECT score_board.rec_id, count(*) as score, recommendations.name, recommendations.link as youtubeLink
+        FROM recommendations
+    JOIN score_board ON score_board.rec_id = recommendations.id
+        WHERE score_board.type = 'upvote' AND recommendations.removed_date IS NULL
+        GROUP BY score_board.rec_id, recommendations.name, recommendations.link
+        HAVING count(*) > 10
+        ORDER BY RANDOM()
+        LIMIT 1;
+    `,
+  );
+
+  return recommendation.rows[0];
+}
+
+async function getRecommendationLowerThenOrEqualToTenScore() {
+  const getIdsWithScoreHigherThenTen = (
+    await connection.query(
+      `
+      SELECT rec_id FROM score_board group by rec_id having count(*) > 10;
+    `,
+    )
+  ).rows.map((id) => id.rec_id);
+
+  const recommendation = await connection.query(
+    `
+    SELECT id, name, link as youtubeLink
+        FROM recommendations
+        WHERE removed_date IS NULL AND NOT id = ANY ($1)
+        ORDER BY RANDOM()
+        LIMIT 1;
+  `,
+    [getIdsWithScoreHigherThenTen],
+  );
+
+  if (!recommendation.rows[0]) return null;
+
+  const score = await connection.query(
+    `
+    SELECT count(*) as score FROM score_board where rec_id = $1 AND type = 'upvote';
+  `,
+    [recommendation.rows[0]?.id],
+  );
+
+  return { ...recommendation.rows[0], ...score.rows[0] };
+}
+
+async function getRandomRecommendation() {
+  const recommendation = await connection.query(`
+    SELECT id, name, link as youtubeLink
+        FROM recommendations
+        WHERE removed_date IS NULL
+        ORDER BY RANDOM()
+        LIMIT 1;
+  `);
+
+  const score = await connection.query(
+    `
+    SELECT count(*) as score FROM score_board where rec_id = $1;
+  `,
+    [recommendation.rows[0]?.id],
+  );
+
+  if (!recommendation.rows[0]) return null;
+
+  return { ...recommendation.rows[0], ...score.rows[0] };
+}
+
+async function findAnyRecommendation() {
+  const recommendation = await connection.query(
+    'SELECT * FROM recommendations LIMIT 1;',
+  );
+
+  return recommendation.rows[0];
+}
+
 export {
   createRecommendation,
   findRecommendationByLink,
   removeRecommendation,
   findDeletedRecommendation,
+  getRecommendationHigherThenTenScore,
+  getRecommendationLowerThenOrEqualToTenScore,
+  getRandomRecommendation,
+  findAnyRecommendation,
 };

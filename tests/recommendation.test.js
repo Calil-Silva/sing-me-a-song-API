@@ -45,4 +45,156 @@ describe('RECOMMENDATION', () => {
     });
     expect(result).toEqual([]);
   });
+
+  it('Should return a no biased random recommendation if all recs have not been voted yet;', async () => {
+    jest
+      .spyOn(recommendationRepository, 'getRecommendationHigherThenTenScore')
+      .mockImplementationOnce(() => false);
+
+    jest
+      .spyOn(
+        recommendationRepository,
+        'getRecommendationLowerThenOrEqualToTenScore',
+      )
+      .mockImplementationOnce(() => false);
+
+    jest
+      .spyOn(recommendationRepository, 'getRandomRecommendation')
+      .mockImplementationOnce(() => ({}));
+
+    jest
+      .spyOn(recommendationRepository, 'findAnyRecommendation')
+      .mockImplementationOnce(() => true);
+
+    const result = await recommendationServices.getRecommendation();
+    expect(result).toBeTruthy();
+  });
+
+  it('Should return a no biased random recommendation if all recs are above ten score;', async () => {
+    jest
+      .spyOn(recommendationRepository, 'getRecommendationHigherThenTenScore')
+      .mockImplementationOnce(() => true);
+
+    jest
+      .spyOn(
+        recommendationRepository,
+        'getRecommendationLowerThenOrEqualToTenScore',
+      )
+      .mockImplementationOnce(() => false);
+
+    jest
+      .spyOn(recommendationRepository, 'getRandomRecommendation')
+      .mockImplementationOnce(() => ({}));
+
+    jest
+      .spyOn(recommendationRepository, 'findAnyRecommendation')
+      .mockImplementationOnce(() => true);
+
+    const result = await recommendationServices.getRecommendation();
+    expect(result).toBeTruthy();
+  });
+
+  it('Should return a no biased random recommendation if all recs are below ten score;', async () => {
+    jest
+      .spyOn(recommendationRepository, 'getRecommendationHigherThenTenScore')
+      .mockImplementationOnce(() => false);
+
+    jest
+      .spyOn(
+        recommendationRepository,
+        'getRecommendationLowerThenOrEqualToTenScore',
+      )
+      .mockImplementationOnce(() => true);
+
+    jest
+      .spyOn(recommendationRepository, 'getRandomRecommendation')
+      .mockImplementationOnce(() => ({}));
+
+    jest
+      .spyOn(recommendationRepository, 'findAnyRecommendation')
+      .mockImplementationOnce(() => true);
+
+    const result = await recommendationServices.getRecommendation();
+    expect(result).toBeTruthy();
+  });
+
+  it('Should an empty array', async () => {
+    jest
+      .spyOn(recommendationRepository, 'getRecommendationHigherThenTenScore')
+      .mockImplementationOnce(() => false);
+
+    jest
+      .spyOn(
+        recommendationRepository,
+        'getRecommendationLowerThenOrEqualToTenScore',
+      )
+      .mockImplementationOnce(() => false);
+
+    jest
+      .spyOn(recommendationRepository, 'getRandomRecommendation')
+      .mockImplementationOnce(() => false);
+
+    jest
+      .spyOn(recommendationRepository, 'findAnyRecommendation')
+      .mockImplementationOnce(() => false);
+
+    const result = await recommendationServices.getRecommendation();
+    expect(result.length).toBe(0);
+  });
+
+  it('Should return a recommendation with more then ten score', async () => {
+    const mockMath = Object.create(global.Math);
+    mockMath.random = () => 0;
+    global.Math = mockMath;
+
+    jest
+      .spyOn(recommendationRepository, 'getRecommendationHigherThenTenScore')
+      .mockImplementationOnce(() => ({ score: 11 }));
+
+    jest
+      .spyOn(
+        recommendationRepository,
+        'getRecommendationLowerThenOrEqualToTenScore',
+      )
+      .mockImplementationOnce(() => true);
+
+    jest
+      .spyOn(recommendationRepository, 'getRandomRecommendation')
+      .mockImplementationOnce(() => true);
+
+    jest
+      .spyOn(recommendationRepository, 'findAnyRecommendation')
+      .mockImplementationOnce(() => true);
+
+    const result = await recommendationServices.getRecommendation();
+    expect(result).toEqual({ score: 11 });
+  });
+
+  it('Should return a recommendation with a score equal to 10', async () => {
+    const mockMath = Object.create(global.Math);
+    mockMath.random = () => 7;
+    global.Math = mockMath;
+
+    jest
+      .spyOn(recommendationRepository, 'getRecommendationHigherThenTenScore')
+      .mockImplementationOnce(() => true);
+
+    jest
+      .spyOn(
+        recommendationRepository,
+        'getRecommendationLowerThenOrEqualToTenScore',
+      )
+      .mockImplementationOnce(() => ({ score: 10 }));
+
+    jest
+      .spyOn(recommendationRepository, 'getRandomRecommendation')
+      .mockImplementationOnce(() => true);
+
+    jest
+      .spyOn(recommendationRepository, 'findAnyRecommendation')
+      .mockImplementationOnce(() => true);
+
+    const result = await recommendationServices.getRecommendation();
+    expect(result).toEqual({ score: 10 });
+  });
 });

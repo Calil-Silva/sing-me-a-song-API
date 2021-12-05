@@ -32,4 +32,20 @@ async function addNewRecommendation(req, res) {
   }
 }
 
-export { addNewRecommendation };
+async function getRecommendation(_, res) {
+  try {
+    const recommendation = await recommendationService.getRecommendation();
+
+    if (recommendation.length === 0) {
+      return res.sendStatus(404);
+    }
+
+    return res.status(200).send(recommendation);
+  } catch (error) {
+    return res
+      .status(500)
+      .send('Ocorreu um erro inesperado, tente mais tarde.');
+  }
+}
+
+export { addNewRecommendation, getRecommendation };
