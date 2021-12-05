@@ -31,18 +31,20 @@ async function isDeleted({ recommendationId }) {
 async function getRecommendation() {
   const biasedList = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'B', 'B'];
 
-  const generateRandomNumber = (min, max) =>
+  const generateRandom = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
-  const randomLetter =
-    biasedList[generateRandomNumber(0, biasedList.length - 1)];
+  const randomLetter = biasedList[generateRandom(0, biasedList.length - 1)];
 
   const recommendationHigherThenTenScore =
     await recommendationRepository.getRecommendationHigherThenTenScore();
+
   const recommendationLowerThenOrEqualToTenScore =
     await recommendationRepository.getRecommendationLowerThenOrEqualToTenScore();
+
   const randomRecommendation =
     await recommendationRepository.getRandomRecommendation();
+
   const findAnyRecommendation =
     await recommendationRepository.findAnyRecommendation();
 
