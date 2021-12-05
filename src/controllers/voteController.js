@@ -8,6 +8,10 @@ async function addDownVote(req, res) {
       recommendationId: id,
     });
 
+    if (!downVote) {
+      return res.sendStatus(404);
+    }
+
     if (downVote.length === 0) {
       return res.status(200).send('Esta recomendação foi removida');
     }
