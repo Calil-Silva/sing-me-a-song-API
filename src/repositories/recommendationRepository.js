@@ -37,7 +37,7 @@ async function findDeletedRecommendation({ recommendationId }) {
 async function getRecommendationHigherThenTenScore() {
   const recommendation = await connection.query(
     `
-    SELECT score_board.rec_id, count(*) as score, recommendations.name, recommendations.link
+    SELECT score_board.rec_id, count(*) as score, recommendations.name, recommendations.link as youtubeLink
         FROM recommendations
     JOIN score_board ON score_board.rec_id = recommendations.id
         WHERE score_board.type = 'upvote' AND recommendations.removed_date IS NULL
@@ -52,25 +52,40 @@ async function getRecommendationHigherThenTenScore() {
 }
 
 async function getRecommendationLowerThenOrEqualToTenScore() {
+  const getIdsWithScoreHigherThenTen = (
+    await connection.query(
+      `
+      SELECT rec_id FROM score_board group by rec_id having count(*) > 10;
+    `,
+    )
+  ).rows.map((id) => id.rec_id);
+
   const recommendation = await connection.query(
     `
-    SELECT score_board.rec_id, count(*) as score, recommendations.name, recommendations.link
+    SELECT id, name, link as youtubeLink
         FROM recommendations
-    JOIN score_board ON score_board.rec_id = recommendations.id
-        WHERE score_board.type = 'upvote' AND recommendations.removed_date IS NULL
-        GROUP BY score_board.rec_id, recommendations.name, recommendations.link
-        HAVING count(*) <= 10
+        WHERE removed_date IS NULL AND NOT id = ANY ($1)
         ORDER BY RANDOM()
         LIMIT 1;
-    `,
+  `,
+    [getIdsWithScoreHigherThenTen],
   );
 
-  return recommendation.rows[0];
+  if (!recommendation.rows[0]) return null;
+
+  const score = await connection.query(
+    `
+    SELECT count(*) as score FROM score_board where rec_id = $1 AND type = 'upvote';
+  `,
+    [recommendation.rows[0]?.id],
+  );
+
+  return { ...recommendation.rows[0], ...score.rows[0] };
 }
 
 async function getRandomRecommendation() {
   const recommendation = await connection.query(`
-    SELECT id, name, link
+    SELECT id, name, link as youtubeLink
         FROM recommendations
         WHERE removed_date IS NULL
         ORDER BY RANDOM()
@@ -81,8 +96,10 @@ async function getRandomRecommendation() {
     `
     SELECT count(*) as score FROM score_board where rec_id = $1;
   `,
-    [recommendation.rows[0].id],
+    [recommendation.rows[0]?.id],
   );
+
+  if (!recommendation.rows[0]) return null;
 
   return { ...recommendation.rows[0], ...score.rows[0] };
 }

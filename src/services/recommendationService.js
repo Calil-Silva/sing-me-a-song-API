@@ -29,7 +29,7 @@ async function isDeleted({ recommendationId }) {
 }
 
 async function getRecommendation() {
-  const biasedList = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B'];
+  const biasedList = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'B', 'B'];
 
   const generateRandomNumber = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
@@ -46,17 +46,19 @@ async function getRecommendation() {
   const findAnyRecommendation =
     await recommendationRepository.findAnyRecommendation();
 
+  if (!findAnyRecommendation) {
+    return [];
+  }
+
   if (
     (recommendationHigherThenTenScore &&
       !recommendationLowerThenOrEqualToTenScore) ||
     (!recommendationHigherThenTenScore &&
+      recommendationLowerThenOrEqualToTenScore) ||
+    (!recommendationHigherThenTenScore &&
       !recommendationLowerThenOrEqualToTenScore)
   ) {
     return randomRecommendation;
-  }
-
-  if (!findAnyRecommendation) {
-    return [];
   }
 
   if (randomLetter === 'A') {
