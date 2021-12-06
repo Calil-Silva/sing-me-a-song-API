@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import connection from '../database/database.js';
 
 async function findRecommendationByLink({ youtubeLink }) {
@@ -112,6 +113,38 @@ async function findAnyRecommendation() {
   return recommendation.rows[0];
 }
 
+async function validScores() {
+  const ids = (
+    await connection.query(
+      'SELECT id FROM recommendations WHERE removed_date IS NULL;',
+    )
+  ).rows.map(({ id }) => id);
+
+  const scores = await connection.query(
+    `
+    SELECT rec_id, count(*) as score
+        FROM score_board
+        WHERE type = 'upvote' AND rec_id = ANY ($1)
+        GROUP BY rec_id;
+    `,
+    [ids],
+  );
+
+  return scores.rows;
+}
+
+async function validRecommendations() {
+  const recommendations = await connection.query(
+    `
+    SELECT id, name, link
+        FROM recommendations
+        WHERE removed_date IS NULL;
+    `,
+  );
+
+  return recommendations.rows;
+}
+
 export {
   createRecommendation,
   findRecommendationByLink,
@@ -121,4 +154,6 @@ export {
   getRecommendationLowerThenOrEqualToTenScore,
   getRandomRecommendation,
   findAnyRecommendation,
+  validScores,
+  validRecommendations,
 };
