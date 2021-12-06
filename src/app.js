@@ -1,18 +1,12 @@
 import express from 'express';
-import * as recommendationController from './controllers/recommendationController.js';
-import * as voteController from './controllers/voteController.js';
+import recommendationRouter from './routers/recommendationRouter.js';
+import voteRouter from './routers/voteRouter.js';
 
 const app = express();
 
 app.use(express.json());
 
-app.post('/recommendations', recommendationController.addNewRecommendation);
-app.post('/recommendations/:id/downvote', voteController.addDownVote);
-app.post('/recommendations/:id/upvote', voteController.addUpVote);
-app.get('/recommendations/random', recommendationController.getRecommendation);
-app.get(
-  '/recommendations/top/:amount',
-  recommendationController.getOrderedRecommendations,
-);
+app.use(recommendationRouter);
+app.use(voteRouter);
 
 export default app;
