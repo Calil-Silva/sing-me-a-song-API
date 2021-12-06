@@ -1,7 +1,7 @@
 import IsDeletedError from '../errors/IsdeletedError.js';
 import * as voteService from '../services/voteService.js';
 
-async function addDownVote(req, res) {
+async function addDownVote(req, res, next) {
   const { id } = req.params;
 
   try {
@@ -18,13 +18,11 @@ async function addDownVote(req, res) {
     if (error instanceof IsDeletedError) {
       return res.status(404).send(error.message);
     }
-    return res
-      .status(500)
-      .send({ message: 'Ocorreu um erro inesperado, tente mais tarde.' });
+    return next(error);
   }
 }
 
-async function addUpVote(req, res) {
+async function addUpVote(req, res, next) {
   const { id } = req.params;
 
   try {
@@ -35,9 +33,7 @@ async function addUpVote(req, res) {
     if (error instanceof IsDeletedError) {
       return res.status(404).send(error.message);
     }
-    return res
-      .status(500)
-      .send({ message: 'Ocorreu um erro inesperado, tente mais tarde.' });
+    return next(error);
   }
 }
 
