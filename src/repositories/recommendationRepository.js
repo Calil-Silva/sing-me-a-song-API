@@ -84,51 +84,6 @@ async function getRecommendationLowerThenOrEqualToTenScore() {
   return { ...recommendation.rows[0], ...score.rows[0] };
 }
 
-async function getRecommendationsOrderedByScores({ amount }) {
-  const ids = (
-    await connection.query(
-      'SELECT id FROM recommendations WHERE removed_date IS NULL;',
-    )
-  ).rows.map(({ id }) => id);
-
-  const scores = await connection.query(
-    `
-    SELECT rec_id, count(*) as score
-        FROM score_board
-        WHERE type = 'upvote' AND rec_id = ANY ($1)
-        GROUP BY rec_id;
-    `,
-    [ids],
-  );
-
-  const recommendations = await connection.query(
-    `
-    SELECT id, name, link
-        FROM recommendations
-        WHERE removed_date IS NULL;
-    `,
-  );
-
-  const scoresList = (rec) =>
-    scores.rows.find(({ rec_id }) => rec_id === rec.id)?.score;
-
-  const recommendationsWithScoreList = recommendations.rows
-    .map((rec) => ({
-      ...rec,
-      score: scoresList(rec) ? scoresList(rec) : '0',
-    }))
-    .sort((a, b) => {
-      if (+a.score < +b.score) return 1;
-      if (+a.score > +b.score) return -1;
-      if (a.id > b.id) return 1;
-      if (a.id < b.id) return -1;
-      return 0;
-    })
-    .slice(0, amount);
-
-  return recommendationsWithScoreList;
-}
-
 async function getRandomRecommendation() {
   const recommendation = await connection.query(`
     SELECT id, name, link as youtubeLink
@@ -158,6 +113,38 @@ async function findAnyRecommendation() {
   return recommendation.rows[0];
 }
 
+async function validScores() {
+  const ids = (
+    await connection.query(
+      'SELECT id FROM recommendations WHERE removed_date IS NULL;',
+    )
+  ).rows.map(({ id }) => id);
+
+  const scores = await connection.query(
+    `
+    SELECT rec_id, count(*) as score
+        FROM score_board
+        WHERE type = 'upvote' AND rec_id = ANY ($1)
+        GROUP BY rec_id;
+    `,
+    [ids],
+  );
+
+  return scores.rows;
+}
+
+async function validRecommendations() {
+  const recommendations = await connection.query(
+    `
+    SELECT id, name, link
+        FROM recommendations
+        WHERE removed_date IS NULL;
+    `,
+  );
+
+  return recommendations.rows;
+}
+
 export {
   createRecommendation,
   findRecommendationByLink,
@@ -167,5 +154,6 @@ export {
   getRecommendationLowerThenOrEqualToTenScore,
   getRandomRecommendation,
   findAnyRecommendation,
-  getRecommendationsOrderedByScores,
+  validScores,
+  validRecommendations,
 };

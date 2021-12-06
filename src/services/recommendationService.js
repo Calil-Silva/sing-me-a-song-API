@@ -70,7 +70,27 @@ async function getRecommendation() {
 }
 
 async function getRecommendations({ amount }) {
-  return recommendationRepository.getRecommendationsOrderedByScores({ amount });
+  const scores = await recommendationRepository.validScores();
+  const recommendations = await recommendationRepository.validRecommendations();
+
+  const scoresList = (rec) =>
+    scores.find(({ rec_id }) => rec_id === rec.id)?.score;
+
+  const recommendationsWithScoreList = recommendations
+    .map((rec) => ({
+      ...rec,
+      score: scoresList(rec) ? scoresList(rec) : '0',
+    }))
+    .sort((a, b) => {
+      if (+a.score < +b.score) return 1;
+      if (+a.score > +b.score) return -1;
+      if (a.id > b.id) return 1;
+      if (a.id < b.id) return -1;
+      return 0;
+    })
+    .slice(0, amount);
+
+  return recommendationsWithScoreList;
 }
 
 export {
