@@ -1,5 +1,8 @@
 import * as recommendationServices from '../src/services/recommendationService.js';
 import * as recommendationRepository from '../src/repositories/recommendationRepository.js';
+import IsCreatedError from '../src/errors/IsCreatedError.js';
+import BadRequestError from '../src/errors/BadRerequestError.js';
+import EmptyDBError from '../src/errors/EmptyDBError.js';
 
 describe('RECOMMENDATION', () => {
   it('Should return the recommendation as a body if it was successfully inserted into repository', async () => {
@@ -23,11 +26,11 @@ describe('RECOMMENDATION', () => {
       .spyOn(recommendationRepository, 'findRecommendationByLink')
       .mockImplementationOnce(() => 1);
 
-    const result = await recommendationServices.newRecommendation({
+    const result = recommendationServices.newRecommendation({
       name: 'teste',
       youtubeLink: 'teste',
     });
-    expect(result).toBe(null);
+    await expect(result).rejects.toThrowError(IsCreatedError);
   });
 
   it('Should return an empty array if the response is undefined', async () => {
@@ -39,11 +42,11 @@ describe('RECOMMENDATION', () => {
       .spyOn(recommendationRepository, 'createRecommendation')
       .mockImplementationOnce(() => undefined);
 
-    const result = await recommendationServices.newRecommendation({
+    const result = recommendationServices.newRecommendation({
       name: 'teste',
       youtubeLink: 'teste',
     });
-    expect(result).toEqual([]);
+    await expect(result).rejects.toThrowError(BadRequestError);
   });
 
   it('Should return a no biased random recommendation if all recs have not been voted yet;', async () => {
@@ -138,8 +141,9 @@ describe('RECOMMENDATION', () => {
       .spyOn(recommendationRepository, 'findAnyRecommendation')
       .mockImplementationOnce(() => false);
 
-    const result = await recommendationServices.getRecommendation();
-    expect(result.length).toBe(0);
+    const result = recommendationServices.getRecommendation();
+
+    await expect(result).rejects.toThrowError(EmptyDBError);
   });
 
   it('Should return a recommendation with more then ten score', async () => {
@@ -249,5 +253,19 @@ describe('RECOMMENDATION', () => {
         score: '0',
       },
     ]);
+  });
+
+  it('Should advise user that none recommendations was found', async () => {
+    const amount = 1;
+    jest
+      .spyOn(recommendationRepository, 'validScores')
+      .mockImplementationOnce(() => null);
+
+    jest
+      .spyOn(recommendationRepository, 'validRecommendations')
+      .mockImplementationOnce(() => null);
+
+    const result = recommendationServices.getRecommendations({ amount });
+    await expect(result).rejects.toThrowError(EmptyDBError);
   });
 });

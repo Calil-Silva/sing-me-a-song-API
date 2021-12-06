@@ -1,17 +1,26 @@
 import * as recommendationRepository from '../repositories/recommendationRepository.js';
+import IsCreatedError from '../errors/IsCreatedError.js';
+import BadRequestError from '../errors/BadRerequestError.js';
+import EmptyDBError from '../errors/EmptyDBError.js';
 
 async function newRecommendation({ name, youtubeLink }) {
   const findOnRepository =
     await recommendationRepository.findRecommendationByLink({ youtubeLink });
 
-  if (findOnRepository > 0) return null;
+  if (findOnRepository > 0) {
+    throw new IsCreatedError('Esta recomendação já foi feita.');
+  }
 
   const recommendation = await recommendationRepository.createRecommendation({
     name,
     youtubeLink,
   });
 
-  if (!recommendation) return [];
+  if (!recommendation) {
+    throw new BadRequestError(
+      'Ocorreu um erro, verifique se os campos nome e link estão preenchidos corretamente.',
+    );
+  }
 
   return recommendation;
 }
@@ -49,7 +58,7 @@ async function getRecommendation() {
     await recommendationRepository.findAnyRecommendation();
 
   if (!findAnyRecommendation) {
-    return [];
+    throw new EmptyDBError('Não foi encontrada nenhuma recomendação.');
   }
 
   if (
@@ -72,6 +81,10 @@ async function getRecommendation() {
 async function getRecommendations({ amount }) {
   const scores = await recommendationRepository.validScores();
   const recommendations = await recommendationRepository.validRecommendations();
+
+  if (!scores && !recommendations) {
+    throw new EmptyDBError('Não foi encontrada nenhuma recomendação.');
+  }
 
   const scoresList = (rec) =>
     scores.find(({ rec_id }) => rec_id === rec.id)?.score;

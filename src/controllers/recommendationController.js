@@ -1,3 +1,6 @@
+import BadRequestError from '../errors/BadRerequestError.js';
+import EmptyDBError from '../errors/EmptyDBError.js';
+import IsCreatedError from '../errors/IsCreatedError.js';
 import * as recommendationService from '../services/recommendationService.js';
 
 async function addNewRecommendation(req, res) {
@@ -9,23 +12,17 @@ async function addNewRecommendation(req, res) {
       youtubeLink,
     });
 
-    if (!addedRecommendation) {
-      return res
-        .status(409)
-        .send({ message: 'Esta recomendação já foi feita.' });
-    }
-
-    if (addedRecommendation.length === 0) {
-      return res.status(400).send({
-        message:
-          'Ocorreu um erro, verifique se os campos nome e link estão preenchidos corretamente.',
-      });
-    }
     return res.status(201).send({
       message: 'Recomendação criada com sucesso!',
       recommendation: addedRecommendation,
     });
   } catch (error) {
+    if (error instanceof IsCreatedError) {
+      return res.status(409).send(error.message);
+    }
+    if (error instanceof BadRequestError) {
+      return res.status(400).send(error.message);
+    }
     return res
       .status(500)
       .send('Ocorreu um erro inesperado, tente mais tarde.');
@@ -36,12 +33,11 @@ async function getRecommendation(_, res) {
   try {
     const recommendation = await recommendationService.getRecommendation();
 
-    if (recommendation.length === 0) {
-      return res.sendStatus(404);
-    }
-
     return res.status(200).send(recommendation);
   } catch (error) {
+    if (error instanceof EmptyDBError) {
+      return res.status(404).send(error.message);
+    }
     return res
       .status(500)
       .send('Ocorreu um erro inesperado, tente mais tarde.');
@@ -57,6 +53,9 @@ async function getOrderedRecommendations(req, res) {
 
     return res.status(200).send(recommendations);
   } catch (error) {
+    if (error instanceof EmptyDBError) {
+      return res.status(404).send(error.message);
+    }
     return res.sendStatus(500);
   }
 }
