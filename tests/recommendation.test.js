@@ -197,4 +197,57 @@ describe('RECOMMENDATION', () => {
     const result = await recommendationServices.getRecommendation();
     expect(result).toEqual({ score: 10 });
   });
+
+  it('Should return a list of recommendations based on an given amount', async () => {
+    const amount = 4;
+
+    jest
+      .spyOn(recommendationRepository, 'validScores')
+      .mockImplementationOnce(() => [
+        { rec_id: 1, score: '4' },
+        { rec_id: 2, score: '10' },
+        { rec_id: 5, score: '0' },
+        { rec_id: 4, score: '0' },
+        { rec_id: 3, score: '0' },
+      ]);
+
+    jest
+      .spyOn(recommendationRepository, 'validRecommendations')
+      .mockImplementationOnce(() => [
+        { id: 1, name: 'teste 1', youtubeLink: 'http...' },
+        { id: 2, name: 'teste 2', youtubeLink: 'http...' },
+        { id: 5, name: 'teste 5', youtubeLink: 'http...' },
+        { id: 4, name: 'teste 4', youtubeLink: 'http...' },
+        { id: 3, name: 'teste 3', youtubeLink: 'http...' },
+      ]);
+
+    const result = await recommendationServices.getRecommendations({ amount });
+
+    expect(result).toEqual([
+      {
+        id: 2,
+        name: 'teste 2',
+        youtubeLink: 'http...',
+        score: '10',
+      },
+      {
+        id: 1,
+        name: 'teste 1',
+        youtubeLink: 'http...',
+        score: '4',
+      },
+      {
+        id: 3,
+        name: 'teste 3',
+        youtubeLink: 'http...',
+        score: '0',
+      },
+      {
+        id: 4,
+        name: 'teste 4',
+        youtubeLink: 'http...',
+        score: '0',
+      },
+    ]);
+  });
 });
