@@ -1,3 +1,4 @@
+import IsDeletedError from '../errors/IsdeletedError.js';
 import * as voteRepository from '../repositories/voteRepository.js';
 import * as recommendationService from './recommendationService.js';
 
@@ -7,7 +8,7 @@ async function addUpVote({ recommendationId }) {
   });
 
   if (checkUnavailability) {
-    return null;
+    throw new IsDeletedError('Recomendação não encontrada.');
   }
 
   const vote = await voteRepository.createVote({
@@ -22,7 +23,7 @@ async function addDownVote({ recommendationId }) {
   const isDeleted = await recommendationService.isDeleted({ recommendationId });
 
   if (isDeleted) {
-    return null;
+    throw new IsDeletedError('Recomendação não encontrada.');
   }
 
   const downVotesAmount = await voteRepository.findDownVotes({

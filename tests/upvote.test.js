@@ -1,3 +1,4 @@
+import IsDeletedError from '../src/errors/IsdeletedError.js';
 import * as voteRepository from '../src/repositories/voteRepository.js';
 import * as recommendationService from '../src/services/recommendationService.js';
 import * as voteService from '../src/services/voteService.js';
@@ -8,9 +9,9 @@ describe('UPVOTE', () => {
       .spyOn(recommendationService, 'isDeleted')
       .mockImplementationOnce(() => true);
 
-    const result = await voteService.addUpVote({ recommendationId: 1 });
+    const result = voteService.addUpVote({ recommendationId: 1 });
 
-    expect(result).toBe(null);
+    await expect(result).rejects.toThrowError(IsDeletedError);
   });
 
   test('Should return the upvote', async () => {
