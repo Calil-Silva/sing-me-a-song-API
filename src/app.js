@@ -6,9 +6,13 @@ const app = express();
 
 app.use(express.json());
 
-app.post('/recommendation', recommendationController.addNewRecommendation);
-app.post('/recommendation/:id/downvote', voteController.addDownVote);
-app.post('/recommendation/:id/upvote', voteController.addUpVote);
-app.get('/recommendation/random', recommendationController.getRecommendation);
+app.post('/recommendations', recommendationController.addNewRecommendation);
+app.post('/recommendations/:id/downvote', voteController.addDownVote);
+app.post('/recommendations/:id/upvote', voteController.addUpVote);
+app.get('/recommendations/random', recommendationController.getRecommendation);
+app.get(
+  '/recommendations/top/:amount',
+  recommendationController.getOrderedRecommendations,
+);
 
 export default app;

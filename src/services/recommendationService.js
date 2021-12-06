@@ -69,9 +69,14 @@ async function getRecommendation() {
   return recommendationLowerThenOrEqualToTenScore;
 }
 
+async function getRecommendations({ amount }) {
+  return recommendationRepository.getRecommendationsOrderedByScores({ amount });
+}
+
 export {
   newRecommendation,
   removeRecommendation,
   isDeleted,
   getRecommendation,
+  getRecommendations,
 };

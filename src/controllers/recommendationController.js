@@ -48,4 +48,17 @@ async function getRecommendation(_, res) {
   }
 }
 
-export { addNewRecommendation, getRecommendation };
+async function getOrderedRecommendations(req, res) {
+  const { amount } = req.params;
+  try {
+    const recommendations = await recommendationService.getRecommendations({
+      amount,
+    });
+
+    return res.status(200).send(recommendations);
+  } catch (error) {
+    return res.sendStatus(500);
+  }
+}
+
+export { addNewRecommendation, getRecommendation, getOrderedRecommendations };
